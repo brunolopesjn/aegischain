@@ -1,0 +1,4 @@
+== Experimento B: QueryConsentsByPatient vs. registros por paciente (level=10000) ==
+Seed pulado, reaproveitando registros existentes
+Medindo QueryConsentsByPatient(patient-discovery-fixed)...
+[level=10000] QueryConsentsByPatient       p50=2.097901878s p95=2.23487121s throughput=4.65 tx/s (ok=1950, errs=0, wall=6m59.747213255s)

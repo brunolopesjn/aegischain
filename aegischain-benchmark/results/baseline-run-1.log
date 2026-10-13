@@ -1,0 +1,12 @@
+== Seed: criando 5000 ownership records + consents GRANTED ==
+seed concluído: 5000 ownership records + 5000 consents GRANTED
+
+== Sequential ==
+[sequential] CreateConsent (write)        p50=1.266919ms p95=1.3941ms   throughput=748.75 req/s (measured=4900, warmup=100, errs=0, status=map[201:4900], wall=6.544280544s)
+[sequential] UpdateConsentStatus (write)  p50=1.2584ms   p95=4.384069ms throughput=594.46 req/s (measured=4900, warmup=100, errs=0, status=map[200:4900], wall=8.242837361s)
+[sequential] CheckAccess (read)           p50=1.148369ms p95=1.25268ms  throughput=843.77 req/s (measured=4900, warmup=100, errs=0, status=map[200:4900], wall=5.807267442s)
+
+== Concurrent (max 200 in-flight, run-tag=1784921793) ==
+[concurrent] CreateConsent (write)        p50=14.856348ms p95=51.752222ms throughput=9490.08 req/s (measured=4900, warmup=100, errs=0, status=map[201:4900], wall=516.328543ms)
+[concurrent] UpdateConsentStatus (write)  p50=13.446818ms p95=46.528834ms throughput=10696.14 req/s (measured=4900, warmup=100, errs=0, status=map[200:4900], wall=458.109153ms)
+[concurrent] CheckAccess (read)           p50=10.018238ms p95=35.493705ms throughput=14402.51 req/s (measured=4900, warmup=100, errs=0, status=map[200:4900], wall=340.2184ms)

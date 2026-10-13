@@ -1,0 +1,3 @@
+== Experimento A: CheckAccess vs. tamanho total do ledger (level=1000000) ==
+Seed pulado, reaproveitando ledger existente
+Medindo CheckAccess sobre patient-scale-0...

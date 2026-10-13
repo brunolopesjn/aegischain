@@ -1,0 +1,44 @@
+services:
+  orthanc:
+    image: orthancteam/orthanc:latest
+    container_name: aegis-orthanc
+    environment:
+      ORTHANC__NAME: "Clinic1-Orthanc"
+      DICOM_WEB_PLUGIN_ENABLED: "true"
+      STONE_WEB_VIEWER_PLUGIN_ENABLED: "true"
+      ORTHANC__AUTHENTICATION_ENABLED: "false"
+    volumes:
+      - orthanc-data:/var/lib/orthanc/db
+    # sem 'ports': só acessível via aegis-proxy ou dicom-viewer, nunca direto do host
+
+  authcheck:
+    build: ./authcheck
+    container_name: aegis-authcheck
+    environment:
+      BASELINE_API_URL: "http://host.docker.internal:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  aegis-proxy:
+    image: nginx:alpine
+    container_name: aegis-nginx
+    ports:
+      - "9080:80"
+    volumes:
+      - ./nginx/aegis-proxy.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - orthanc
+      - authcheck
+
+  dicom-viewer:
+    image: nginx:alpine
+    container_name: aegis-dicom-viewer
+    ports:
+      - "8043:80"
+    volumes:
+      - ./nginx/dicom-viewer.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - orthanc
+
+volumes:
+  orthanc-data:

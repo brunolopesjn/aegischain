@@ -1,0 +1,32 @@
+== Alvo: http://203.0.113.14:9080/dicom-web/studies/1.3.6.1.4.1.14519.5.2.1.8162.5966.211496415587356532518109028398/series ==
+== X-Patient-ID: patient-e2e-1 | X-Invoker-ID: dr-silva ==
+
+== Verificação prévia: requisição única, deve retornar 200 ==
+OK - status 200, latência: 556.736256ms
+
+== Sequential pulado (-skip-sequential) ==
+
+== Concurrent (max 200 in-flight) ==
+  ... 250/5000
+  ... 500/5000
+  ... 750/5000
+  ... 1000/5000
+  ... 1250/5000
+  ... 1500/5000
+  ... 1750/5000
+  ... 2000/5000
+  ... 2250/5000
+  ... 2500/5000
+  ... 2750/5000
+  ... 3000/5000
+  ... 3250/5000
+  ... 3500/5000
+  ... 3750/5000
+  ... 4000/5000
+  ... 4250/5000
+  ... 4500/5000
+  ... 4750/5000
+  ... 5000/5000
+  -- Amostra de status HTTP não-200 (até 20 capturados) --
+     status 504: 20 ocorrência(s) na amostra
+[concurrent] E2E WADO-RS (series)         p50=1.913426942s p95=4.049357531s throughput=28.42 req/s (ok=4696, warmup=100, errs=0, non200=204, wall=2m45.246666753s)

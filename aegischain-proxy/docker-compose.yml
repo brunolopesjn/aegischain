@@ -1,0 +1,57 @@
+services:
+  orthanc:
+    image: orthancteam/orthanc:latest
+    restart: unless-stopped
+    container_name: aegis-orthanc
+    network_mode: host
+    environment:
+      ORTHANC__NAME: "Clinic1-Orthanc"
+      DICOM_WEB_PLUGIN_ENABLED: "true"
+      STONE_WEB_VIEWER_PLUGIN_ENABLED: "true"
+      ORTHANC__AUTHENTICATION_ENABLED: "false"
+    volumes:
+      - orthanc-data:/var/lib/orthanc/db
+
+  authcheck:
+    build: ./authcheck
+    container_name: aegis-authcheck
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - BACKEND_MODE=fabric
+      - FABRIC_MSP_ID=Clinica1MSP
+      - FABRIC_CERT_PATH=/fabric/identity/cert-dir
+      - FABRIC_KEYSTORE_DIR=/fabric/identity/keystore
+      - FABRIC_TLS_CERT_PATH=/fabric/tls/ca.crt
+      - FABRIC_PEER_ENDPOINT=127.0.0.1:7051
+      - FABRIC_GATEWAY_PEER=203.0.113.14
+      - FABRIC_CHANNEL_NAME=aegischain
+      - FABRIC_CHAINCODE_NAME=aegis-consent
+    volumes:
+      - /opt/aegis-proxy-identity/signcerts:/fabric/identity/cert-dir:ro
+      - /opt/aegis-proxy-identity/keystore:/fabric/identity/keystore:ro
+      - /opt/aegis-proxy-identity/tls/ca.crt:/fabric/tls/ca.crt:ro
+
+  aegis-proxy:
+    image: nginx:alpine
+    restart: unless-stopped
+    container_name: aegis-nginx
+    network_mode: host
+    volumes:
+      - ./nginx/aegis-proxy.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - orthanc
+      - authcheck
+
+  dicom-viewer:
+    image: nginx:alpine
+    restart: unless-stopped
+    container_name: aegis-dicom-viewer
+    network_mode: host
+    volumes:
+      - ./nginx/dicom-viewer.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - orthanc
+
+volumes:
+  orthanc-data:

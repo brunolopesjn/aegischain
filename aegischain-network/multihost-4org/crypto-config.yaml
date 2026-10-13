@@ -1,0 +1,36 @@
+OrdererOrgs:
+  - Name: OrdererOrg
+    Domain: orderer.aegischain.local
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer1
+        SANS: ["203.0.113.11"]
+      - Hostname: orderer2
+        SANS: ["203.0.113.12"]
+      - Hostname: orderer3
+        SANS: ["203.0.113.13"]
+
+PeerOrgs:
+  - Name: HospitalA
+    Domain: hospitala.aegischain.local
+    EnableNodeOUs: true
+    Template: {Count: 1, SANS: ["203.0.113.11"]}
+    Users: {Count: 1}
+
+  - Name: HospitalB
+    Domain: hospitalb.aegischain.local
+    EnableNodeOUs: true
+    Template: {Count: 1, SANS: ["203.0.113.12"]}
+    Users: {Count: 1}
+
+  - Name: HospitalC
+    Domain: hospitalc.aegischain.local
+    EnableNodeOUs: true
+    Template: {Count: 1, SANS: ["203.0.113.13"]}
+    Users: {Count: 1}
+
+  - Name: Clinica1
+    Domain: clinica1.aegischain.local
+    EnableNodeOUs: true
+    Template: {Count: 1, SANS: ["203.0.113.14"]}
+    Users: {Count: 1}

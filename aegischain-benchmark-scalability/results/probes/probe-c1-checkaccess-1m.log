@@ -1,0 +1,4 @@
+== Experimento A: CheckAccess vs. tamanho total do ledger (level=1000000) ==
+Seed pulado, reaproveitando ledger existente
+Medindo CheckAccess sobre patient-scale-0...
+[level=1000000] CheckAccess                  p50=293.553133ms p95=370.292609ms throughput=3.22 tx/s (ok=1950, errs=0, wall=10m4.881696694s)

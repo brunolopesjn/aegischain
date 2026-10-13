@@ -1,0 +1,120 @@
+Organizations:
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererMSP
+    MSPDir: crypto-config/ordererOrganizations/orderer.aegischain.local/msp
+    Policies:
+      Readers: {Type: Signature, Rule: "OR('OrdererMSP.member')"}
+      Writers: {Type: Signature, Rule: "OR('OrdererMSP.member')"}
+      Admins:  {Type: Signature, Rule: "OR('OrdererMSP.admin')"}
+    OrdererEndpoints:
+      - 203.0.113.11:7050
+      - 203.0.113.12:7050
+      - 203.0.113.13:7050
+
+  - &HospitalA
+    Name: HospitalAMSP
+    ID: HospitalAMSP
+    MSPDir: crypto-config/peerOrganizations/hospitala.aegischain.local/msp
+    Policies:
+      Readers: {Type: Signature, Rule: "OR('HospitalAMSP.admin','HospitalAMSP.peer','HospitalAMSP.client')"}
+      Writers: {Type: Signature, Rule: "OR('HospitalAMSP.admin','HospitalAMSP.client')"}
+      Admins:  {Type: Signature, Rule: "OR('HospitalAMSP.admin')"}
+      Endorsement: {Type: Signature, Rule: "OR('HospitalAMSP.peer')"}
+    AnchorPeers: [{Host: 203.0.113.11, Port: 7051}]
+
+  - &HospitalB
+    Name: HospitalBMSP
+    ID: HospitalBMSP
+    MSPDir: crypto-config/peerOrganizations/hospitalb.aegischain.local/msp
+    Policies:
+      Readers: {Type: Signature, Rule: "OR('HospitalBMSP.admin','HospitalBMSP.peer','HospitalBMSP.client')"}
+      Writers: {Type: Signature, Rule: "OR('HospitalBMSP.admin','HospitalBMSP.client')"}
+      Admins:  {Type: Signature, Rule: "OR('HospitalBMSP.admin')"}
+      Endorsement: {Type: Signature, Rule: "OR('HospitalBMSP.peer')"}
+    AnchorPeers: [{Host: 203.0.113.12, Port: 7051}]
+
+  - &HospitalC
+    Name: HospitalCMSP
+    ID: HospitalCMSP
+    MSPDir: crypto-config/peerOrganizations/hospitalc.aegischain.local/msp
+    Policies:
+      Readers: {Type: Signature, Rule: "OR('HospitalCMSP.admin','HospitalCMSP.peer','HospitalCMSP.client')"}
+      Writers: {Type: Signature, Rule: "OR('HospitalCMSP.admin','HospitalCMSP.client')"}
+      Admins:  {Type: Signature, Rule: "OR('HospitalCMSP.admin')"}
+      Endorsement: {Type: Signature, Rule: "OR('HospitalCMSP.peer')"}
+    AnchorPeers: [{Host: 203.0.113.13, Port: 7051}]
+
+  - &Clinica1
+    Name: Clinica1MSP
+    ID: Clinica1MSP
+    MSPDir: crypto-config/peerOrganizations/clinica1.aegischain.local/msp
+    Policies:
+      Readers: {Type: Signature, Rule: "OR('Clinica1MSP.admin','Clinica1MSP.peer','Clinica1MSP.client')"}
+      Writers: {Type: Signature, Rule: "OR('Clinica1MSP.admin','Clinica1MSP.client')"}
+      Admins:  {Type: Signature, Rule: "OR('Clinica1MSP.admin')"}
+      Endorsement: {Type: Signature, Rule: "OR('Clinica1MSP.peer')"}
+    AnchorPeers: [{Host: 203.0.113.14, Port: 7051}]
+
+Capabilities:
+  Channel: &ChannelCapabilities {V2_0: true}
+  Orderer: &OrdererCapabilities {V2_0: true}
+  Application: &ApplicationCapabilities {V2_5: true}
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    Readers: {Type: ImplicitMeta, Rule: "ANY Readers"}
+    Writers: {Type: ImplicitMeta, Rule: "ANY Writers"}
+    Admins:  {Type: ImplicitMeta, Rule: "MAJORITY Admins"}
+    LifecycleEndorsement: {Type: ImplicitMeta, Rule: "MAJORITY Endorsement"}
+    Endorsement: {Type: ImplicitMeta, Rule: "MAJORITY Endorsement"}
+  Capabilities: {<<: *ApplicationCapabilities}
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  Addresses:
+    - 203.0.113.11:7050
+    - 203.0.113.12:7050
+    - 203.0.113.13:7050
+  EtcdRaft:
+    Consenters:
+      - Host: 203.0.113.11
+        Port: 7050
+        ClientTLSCert: crypto-config/ordererOrganizations/orderer.aegischain.local/orderers/orderer1.orderer.aegischain.local/tls/server.crt
+        ServerTLSCert: crypto-config/ordererOrganizations/orderer.aegischain.local/orderers/orderer1.orderer.aegischain.local/tls/server.crt
+      - Host: 203.0.113.12
+        Port: 7050
+        ClientTLSCert: crypto-config/ordererOrganizations/orderer.aegischain.local/orderers/orderer2.orderer.aegischain.local/tls/server.crt
+        ServerTLSCert: crypto-config/ordererOrganizations/orderer.aegischain.local/orderers/orderer2.orderer.aegischain.local/tls/server.crt
+      - Host: 203.0.113.13
+        Port: 7050
+        ClientTLSCert: crypto-config/ordererOrganizations/orderer.aegischain.local/orderers/orderer3.orderer.aegischain.local/tls/server.crt
+        ServerTLSCert: crypto-config/ordererOrganizations/orderer.aegischain.local/orderers/orderer3.orderer.aegischain.local/tls/server.crt
+  BatchTimeout: 200ms
+  BatchSize:
+    MaxMessageCount: 100
+    AbsoluteMaxBytes: 10 MB
+    PreferredMaxBytes: 2 MB
+  Organizations: [*OrdererOrg]
+  Policies:
+    Readers: {Type: ImplicitMeta, Rule: "ANY Readers"}
+    Writers: {Type: ImplicitMeta, Rule: "ANY Writers"}
+    Admins:  {Type: ImplicitMeta, Rule: "MAJORITY Admins"}
+    BlockValidation: {Type: ImplicitMeta, Rule: "ANY Writers"}
+  Capabilities: {<<: *OrdererCapabilities}
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers: {Type: ImplicitMeta, Rule: "ANY Readers"}
+    Writers: {Type: ImplicitMeta, Rule: "ANY Writers"}
+    Admins:  {Type: ImplicitMeta, Rule: "MAJORITY Admins"}
+  Capabilities: {<<: *ChannelCapabilities}
+
+Profiles:
+  AegisApplicationGenesis:
+    <<: *ChannelDefaults
+    Orderer: {<<: *OrdererDefaults}
+    Application:
+      <<: *ApplicationDefaults
+      Organizations: [*HospitalA, *HospitalB, *HospitalC, *Clinica1]

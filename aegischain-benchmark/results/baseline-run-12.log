@@ -1,0 +1,8 @@
+== Seed pulado (-skip-seed), reaproveitando banco existente ==
+
+== Sequential pulado (-skip-sequential) ==
+
+== Concurrent (max 200 in-flight, run-tag=1784921983) ==
+[concurrent] CreateConsent (write)        p50=15.015001ms p95=57.311991ms throughput=8864.85 req/s (measured=4900, warmup=100, errs=0, status=map[201:4900], wall=552.744676ms)
+[concurrent] UpdateConsentStatus (write)  p50=13.14069ms p95=46.004411ms throughput=10995.06 req/s (measured=4900, warmup=100, errs=0, status=map[200:4900], wall=445.654574ms)
+[concurrent] CheckAccess (read)           p50=9.59732ms  p95=33.91495ms throughput=14315.82 req/s (measured=4900, warmup=100, errs=0, status=map[200:4900], wall=342.278684ms)

@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+BUILD_OUTPUT_DIR="$1"
+RELEASE_DIR="$2"
+if [ -f "$BUILD_OUTPUT_DIR/connection.json" ]; then
+    cp "$BUILD_OUTPUT_DIR/connection.json" "$RELEASE_DIR/connection.json"
+fi

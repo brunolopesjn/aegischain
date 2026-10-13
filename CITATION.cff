@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software or its experiment artifacts, please cite it as below."
+title: "AegisChain: code and experiment artifacts"
+type: software
+authors:
+  - family-names: Batista
+    given-names: Bruno L. A.
+  - family-names: Celestino Júnior
+    given-names: Joaquim
+  - family-names: Ferreira
+    given-names: João C.
+repository-code: "https://github.com/brunolopesjn/aegischain"
+license: MIT
+version: "1.0.0"
+date-released: "2026-10-12"
+# TODO after publication:
+#   doi: 10.5281/zenodo.XXXXXXX        (Zenodo record of this release)
+#   preferred-citation: the IEEE Access paper (title, volume, pages, DOI)

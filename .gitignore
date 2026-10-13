@@ -1,0 +1,36 @@
+# Terceiros
+fabric-samples/
+
+# Material criptográfico e segredos
+**/crypto-config/
+**/keystore/
+**/priv_sk
+*.key
+*.pem
+.env
+*.env
+
+# Binários e artefatos
+aegischain-benchmark*/aegischain-benchmark*
+*.exe
+*.test
+/bin/
+
+# Logs, PIDs, resultados locais
+*.pid
+
+# Dados clínicos / Orthanc
+*.dcm
+**/orthanc-db/
+**/orthanc-data/
+
+# Artefatos de build dos chaincodes
+*-bin
+*.tar.gz
+**/vendor/
+
+# Material gerado por cryptogen/configtxgen: cada pessoa gera o seu
+**/organizations/
+**/channel-artifacts/
+/aegischain-benchmark/benchmark
+/aegischain-proxy/authcheck/authcheck

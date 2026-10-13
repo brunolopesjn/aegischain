@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+CHAINCODE_SOURCE_DIR="$1"
+BUILD_OUTPUT_DIR="$3"
+cp "$CHAINCODE_SOURCE_DIR/connection.json" "$BUILD_OUTPUT_DIR/connection.json"

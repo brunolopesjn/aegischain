@@ -1,0 +1,30 @@
+== Criando pool de 20 conexões gRPC independentes ==
+== Alvo: peer 127.0.0.1:7051, canal aegischain, chaincode aegis-consent ==
+== CheckAccess(patient-e2e-1, dr-silva, 1.3.6.1.4.1.14519.5.2.1.8162.5966.211496415587356532518109028398) ==
+
+== Verificação prévia: chamada única, deve retornar 'true' ==
+OK - resultado 'true', latência: 309.316689ms
+
+== Sequential pulado (-skip-sequential) ==
+== Concurrent (max 200 in-flight) ==
+  ... 250/5000
+  ... 500/5000
+  ... 750/5000
+  ... 1000/5000
+  ... 1250/5000
+  ... 1500/5000
+  ... 1750/5000
+  ... 2000/5000
+  ... 2250/5000
+  ... 2500/5000
+  ... 2750/5000
+  ... 3000/5000
+  ... 3250/5000
+  ... 3500/5000
+  ... 3750/5000
+  ... 4000/5000
+  ... 4250/5000
+  ... 4500/5000
+  ... 4750/5000
+  ... 5000/5000
+[concurrent] CheckAccess (Fabric direto)  p50=2.462156677s p95=2.899735174s throughput=79.80 tx/s (ok=4900, warmup=100, errs=0, wall=1m1.406579757s)
