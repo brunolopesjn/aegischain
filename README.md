@@ -15,12 +15,28 @@ repository: [`aegischain-tla`](https://github.com/brunolopesjn/aegischain-tla).
 
 ## Architecture
 
-```
- client ──► NGINX (auth_request) ──► authcheck ──► Fabric (CheckAccess)
-              │  allow                                  ▲
-              ▼                                         │ ownership / consent / logging
-           Orthanc (DICOMweb)                    3 chaincodes on a Raft-ordered
-                                                 Fabric network (CouchDB state)
+```mermaid
+flowchart LR
+    client(["Client / viewer"]) -->|"GET /dicom-web/...<br/>X-Patient-ID, X-Invoker-ID"| nginx
+
+    subgraph proxy["Aegis Proxy (one per institution)"]
+        nginx["NGINX<br/>auth_request"]
+        authcheck["authcheck (Go)"]
+        orthanc[("Orthanc<br/>DICOMweb")]
+        nginx -->|"/internal/authcheck"| authcheck
+        authcheck -.->|"allow / deny"| nginx
+        nginx -->|"if allowed"| orthanc
+    end
+
+    authcheck -->|"CheckAccess<br/>(Fabric Gateway)"| consent
+
+    subgraph fabric["Hyperledger Fabric (Raft ordering, CouchDB state)"]
+        consent["consent chaincode"]
+        ownership["ownership chaincode"]
+        logging["logging chaincode"]
+        consent -->|"cross-chaincode call"| ownership
+        consent -->|"cross-chaincode call"| logging
+    end
 ```
 
 ## Repository map
