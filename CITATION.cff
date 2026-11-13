@@ -9,6 +9,8 @@ authors:
     given-names: Joaquim
   - family-names: Ferreira
     given-names: João C.
+  - family-names: Abreu
+    given-names: João L. C. de
 repository-code: "https://github.com/brunolopesjn/aegischain"
 license: MIT
 version: "1.0.0"
