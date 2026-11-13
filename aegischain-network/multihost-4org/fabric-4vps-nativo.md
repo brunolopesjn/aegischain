@@ -1202,7 +1202,7 @@ sudo -u fabric --preserve-env=FABRIC_CFG_PATH,CORE_PEER_TLS_ENABLED \
       --peerAddresses 203.0.113.12:7051   --tlsRootCertFiles /opt/fabric/crypto/peer-tlsca-hospitalb.crt \
       --peerAddresses 203.0.113.13:7051  --tlsRootCertFiles /opt/fabric/crypto/peer-tlsca-hospitalc.crt \
       --peerAddresses 203.0.113.14:7051    --tlsRootCertFiles /opt/fabric/crypto/peer-tlsca-clinica1.crt \
-      -c "{\"function\":\"CreateOwnershipRecord\",\"Args\":[\"<patientID>\",\"<studyUID>\",\"<proxyEndpoint>\",\"<invokerID>\"]}"
+      -c "{\"function\":\"CreateOwnershipRecord\",\"Args\":[\"<patientID>\",\"<studyUID>\",\"<proxyEndpoint>\",\"<ownerInvokerID: saída de GetCallerID da identidade que aprova>\"]}"
 
     peer chaincode query -C aegischain -n aegis-ownership \
       -c "{\"function\":\"GetOwnershipRecord\",\"Args\":[\"<patientID>\",\"<studyUID>\"]}"
