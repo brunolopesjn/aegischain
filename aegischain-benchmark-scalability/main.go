@@ -52,6 +52,10 @@ type pooledConn struct {
 var pool []*pooledConn
 var poolCounter int64
 
+// callerID é o GetID() da identidade que assina as transações; é registrado
+// como ownerInvokerID de todos os registros semeados.
+var callerID string
+
 func main() {
 	flag.Parse()
 	if *certDir == "" || *keystoreDir == "" || *tlsCertPath == "" {
@@ -101,6 +105,13 @@ func main() {
 			p.conn.Close()
 		}
 	}()
+
+	idBytes, err := pool[0].consentContract.EvaluateTransaction("GetCallerID")
+	if err != nil {
+		log.Fatalf("GetCallerID falhou (chaincode de consent atualizado e reimplantado?): %v", err)
+	}
+	callerID = string(idBytes)
+	fmt.Printf("Identidade do cliente (GetCallerID): %s\n", callerID)
 
 	switch *experiment {
 	case "checkaccess":
@@ -158,7 +169,7 @@ func seedDistinctPatients(start, n int) {
 
 			patientID := fmt.Sprintf("patient-scale-%d", i)
 			studyUID := fmt.Sprintf("study-scale-%d", i)
-			ownerInvokerID := fmt.Sprintf("patient-scale-owner-%d", i)
+			ownerInvokerID := callerID
 
 			if _, err := ownershipContract.SubmitTransaction("CreateOwnershipRecord", patientID, studyUID, "https://clinic1.example/wado", ownerInvokerID); err != nil {
 				log.Printf("seed: CreateOwnershipRecord falhou em i=%d: %v", i, err)
@@ -167,7 +178,7 @@ func seedDistinctPatients(start, n int) {
 				log.Printf("seed: RequestAccess falhou em i=%d: %v", i, err)
 			}
 			expiry := time.Now().Add(24 * time.Hour).Format(time.RFC3339)
-			if _, err := consentContract.SubmitTransaction("UpdateConsentStatus", patientID, "dr-silva", studyUID, ownerInvokerID, "true", expiry); err != nil {
+			if _, err := consentContract.SubmitTransaction("UpdateConsentStatus", patientID, "dr-silva", studyUID, "true", expiry); err != nil {
 				log.Printf("seed: UpdateConsentStatus falhou em i=%d: %v", i, err)
 			}
 
@@ -192,7 +203,7 @@ func runDiscoveryExperiment() {
 
 	const fixedPatient = "patient-discovery-fixed"
 	const fixedStudy = "study-discovery-fixed"
-	const fixedOwner = "patient-discovery-fixed-owner"
+	fixedOwner := callerID
 
 	if !*skipSeed {
 		// Garante que o paciente fixo existe (idempotente - ignora erro

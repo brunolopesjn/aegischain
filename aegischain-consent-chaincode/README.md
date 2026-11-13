@@ -19,11 +19,36 @@ Design points:
 
 | Function | Purpose |
 |----------|---------|
-| `RequestAccess` | A provider asks for access to a study |
-| `UpdateConsentStatus` | The patient approves, denies or revokes, with an expiry |
-| `CheckAccess` | Read-only decision: is this provider currently authorized? |
+| `RequestAccess` | A provider asks for access to a study (`patientID`, `providerID`, `studyUID`) |
+| `UpdateConsentStatus` | The study owner approves, denies or revokes, with an expiry (`patientID`, `providerID`, `studyUID`, `approve`, `expiryTimestamp`). The caller is taken from the transaction signer; there is no invoker argument |
+| `CheckAccess` | Access decision used by the proxy. Submitted as a transaction because it writes an audit entry; it fails closed if the entry cannot be written |
+| `GetCallerID` | Returns the signer's `GetID()`. Used to obtain the value to register as `ownerInvokerID` in the ownership chaincode |
 | `QueryConsentsByPatient` | Lists a patient's consents (partial composite-key scan; cost grows with the number of records per patient) |
 | `GetConsentHistory` | Full transaction history of one consent |
+
+## Identity and trust model
+
+- `UpdateConsentStatus` authorizes the **transaction signer**
+  (`GetClientIdentity().GetID()`), not a caller-supplied string. The call is
+  accepted only if the signer equals the `ownerInvokerID` stored in the
+  ownership record of the study.
+- `ownerInvokerID` is set by the registering institution in
+  `CreateOwnershipRecord` (see `aegis-ownership`). It is a registrar-attested
+  value: the model trusts the institution that registers the study to bind it to
+  the correct identity. To obtain the value for a given identity, call
+  `GetCallerID` with that identity.
+- `CheckAccess` uses the transaction timestamp (`GetTxTimestamp`) for expiry, so
+  all endorsing peers evaluate the same instant. This is the ledger's time, not a
+  trusted clock.
+- `CheckAccess` writes an audit entry for every decision on an existing consent,
+  and returns an error (no decision) if that write fails. A request for which no
+  consent exists is denied without an audit entry, to avoid unbounded ledger
+  growth from arbitrary probes.
+- `providerID` in `RequestAccess` is a claim made by the caller and is not bound
+  to the signer's identity.
+
+Known limitations: `CreateLogEntry` and `QueryLogsByPatient` in `aegis-logging`
+are not access-controlled, so a client can invoke the logging chaincode directly.
 
 For cross-chaincode calls the chaincode uses the channel it is deployed on
 (`ctx.GetStub().GetChannelID()`), so the channel name is not hardcoded.

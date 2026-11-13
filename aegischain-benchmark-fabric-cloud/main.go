@@ -49,14 +49,19 @@ type callResult struct {
 type txBuilder func(i int) (fn string, args []string)
 
 type pooledConn struct {
-	conn               *grpc.ClientConn
-	gateway            *client.Gateway
-	consentContract    *client.Contract
-	ownershipContract  *client.Contract
+	conn              *grpc.ClientConn
+	gateway           *client.Gateway
+	consentContract   *client.Contract
+	ownershipContract *client.Contract
 }
 
 var pool []*pooledConn
 var poolCounter int64
+
+// callerID é o GetID() da identidade que assina as transações. É registrado
+// como ownerInvokerID de todos os pacientes e é o único ID aceito por
+// UpdateConsentStatus (o chaincode não recebe mais o invokerID por parâmetro).
+var callerID string
 
 func main() {
 	flag.Parse()
@@ -108,6 +113,13 @@ func main() {
 
 	fmt.Printf("== Alvo: peer %s, canal %s ==\n", *peerEndpoint, *channelName)
 
+	idBytes, err := pool[0].consentContract.EvaluateTransaction("GetCallerID")
+	if err != nil {
+		log.Fatalf("GetCallerID falhou (chaincode de consent atualizado e reimplantado?): %v", err)
+	}
+	callerID = string(idBytes)
+	fmt.Printf("== Identidade do cliente (GetCallerID): %s ==\n", callerID)
+
 	if !*skipSeed {
 		fmt.Printf("== Seed: criando %d ownership records + consents GRANTED (dr-silva) ==\n", n)
 		seed()
@@ -151,7 +163,7 @@ func seed() {
 
 			patientID := fmt.Sprintf("patient-%d", i)
 			studyUID := fmt.Sprintf("study-%d", i)
-			ownerInvokerID := fmt.Sprintf("patient-owner-%d", i)
+			ownerInvokerID := callerID
 
 			if _, err := ownershipContract.SubmitTransaction("CreateOwnershipRecord", patientID, studyUID, "https://clinic1.example/wado", ownerInvokerID); err != nil {
 				log.Printf("seed: CreateOwnershipRecord falhou em i=%d: %v", i, err)
@@ -160,7 +172,7 @@ func seed() {
 				log.Printf("seed: RequestAccess falhou em i=%d: %v", i, err)
 			}
 			expiry := time.Now().Add(2 * time.Hour).Format(time.RFC3339)
-			if _, err := consentContract.SubmitTransaction("UpdateConsentStatus", patientID, "dr-silva", studyUID, ownerInvokerID, "true", expiry); err != nil {
+			if _, err := consentContract.SubmitTransaction("UpdateConsentStatus", patientID, "dr-silva", studyUID, "true", expiry); err != nil {
 				log.Printf("seed: UpdateConsentStatus falhou em i=%d: %v", i, err)
 			}
 
@@ -188,9 +200,8 @@ func updateConsentArgsBuilder(prefix string) txBuilder {
 		patientID := fmt.Sprintf("patient-%d", i)
 		studyUID := fmt.Sprintf("study-%d", i)
 		providerID := fmt.Sprintf("bench-provider-%s-%s-%d", prefix, *runTag, i)
-		ownerInvokerID := fmt.Sprintf("patient-owner-%d", i)
 		expiry := time.Now().Add(1 * time.Hour).Format(time.RFC3339)
-		return "UpdateConsentStatus", []string{patientID, providerID, studyUID, ownerInvokerID, "true", expiry}
+		return "UpdateConsentStatus", []string{patientID, providerID, studyUID, "true", expiry}
 	}
 }
 

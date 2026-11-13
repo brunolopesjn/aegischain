@@ -154,9 +154,15 @@ func (ac *AegisConsentContract) UpdateConsentStatus(
 	patientID string,
 	providerID string,
 	studyUID string,
-	invokerID string,
 	approve bool,
 	expiryTimestampStr string) error {
+
+	// The caller is the identity that signed the transaction; it is never taken
+	// from an argument (SR3).
+	callerID, err := ctx.GetClientIdentity().GetID()
+	if err != nil {
+		return fmt.Errorf("failed to get caller identity: %w", err)
+	}
 
 	compositeKey, err := ctx.GetStub().CreateCompositeKey(CompositeKeyID, []string{patientID, studyUID, providerID})
 	if err != nil {
@@ -180,7 +186,7 @@ func (ac *AegisConsentContract) UpdateConsentStatus(
 	if err != nil {
 		return err
 	}
-	if ownership.OwnerInvokerID != invokerID {
+	if ownership.OwnerInvokerID != callerID {
 		return fmt.Errorf("authorization error: invoker is not the study owner")
 	}
 
@@ -260,7 +266,8 @@ func (ac *AegisConsentContract) CheckAccess(
 	}
 
 	if consentJSON == nil {
-		// Nenhum consent - nada a logar; nega.
+		// No consent record: denied without an audit entry, so that unauthenticated
+		// probes of non-existent keys cannot grow the ledger.
 		return false, nil
 	}
 
@@ -269,14 +276,21 @@ func (ac *AegisConsentContract) CheckAccess(
 		return false, fmt.Errorf("failed to unmarshal consent JSON: %w", err)
 	}
 
+	// Deterministic time source shared by all endorsers: the transaction timestamp.
+	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		return false, fmt.Errorf("failed to get transaction timestamp: %w", err)
+	}
+	now := txTimestamp.AsTime()
+
 	if consent.Status != ConsentStatusGranted {
 		if err := invokeCreateLogEntry(ctx, patientID, providerID, studyUID, "FAILURE", "consent not granted"); err != nil {
-			fmt.Printf("Warning: failed to write audit log: %v\n", err)
+			return false, err
 		}
 		return false, nil
 	}
 
-	if !consent.ExpiryTimestamp.IsZero() && time.Now().UTC().After(consent.ExpiryTimestamp) {
+	if !consent.ExpiryTimestamp.IsZero() && now.After(consent.ExpiryTimestamp) {
 		consent.Status = ConsentStatusExpired
 
 		updatedConsentJSON, err := json.Marshal(consent)
@@ -291,15 +305,28 @@ func (ac *AegisConsentContract) CheckAccess(
 		}
 
 		if err := invokeCreateLogEntry(ctx, patientID, providerID, studyUID, "FAILURE", "consent expired at check time"); err != nil {
-			fmt.Printf("Warning: failed to write audit log: %v\n", err)
+			return false, err
 		}
 		return false, nil
 	}
 
+	// Fail closed: if the audit entry cannot be written, the transaction fails and
+	// no access decision is returned.
 	if err := invokeCreateLogEntry(ctx, patientID, providerID, studyUID, "SUCCESS", "access granted"); err != nil {
-		fmt.Printf("Warning: failed to write audit log: %v\n", err)
+		return false, err
 	}
 	return true, nil
+}
+
+// GetCallerID returns the identity of the transaction signer, in the form that
+// UpdateConsentStatus compares against the ownerInvokerID registered in the
+// ownership record. Clients use it to learn the value to register for a patient.
+func (ac *AegisConsentContract) GetCallerID(ctx contractapi.TransactionContextInterface) (string, error) {
+	id, err := ctx.GetClientIdentity().GetID()
+	if err != nil {
+		return "", fmt.Errorf("failed to get caller identity: %w", err)
+	}
+	return id, nil
 }
 
 func (ac *AegisConsentContract) QueryConsentsByPatient(
